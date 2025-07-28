@@ -56,6 +56,7 @@ const connectDB = async () => {
                 subject VARCHAR(255) NOT NULL,
                 description TEXT NOT NULL,
                 status VARCHAR(50) DEFAULT 'pending',
+                assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
