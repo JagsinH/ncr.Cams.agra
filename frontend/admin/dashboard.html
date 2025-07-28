@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Complaint System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>Admin Dashboard</h2>
+            <button id="logoutButton" class="logout-btn">Logout</button>
+        </header>
+
+        <section class="admin-summary">
+            <h3>Complaint Overview</h3>
+            </section>
+
+        <section class="all-complaints">
+            <h3>All Complaints</h3>
+            <div id="loadingMessage" style="text-align: center; padding: 20px;">Loading complaints...</div>
+            <div id="complaintsTableContainer" style="display: none; max-height: 500px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Submitted By</th>
+                            <th>Admin Comment</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody">
+                        </tbody>
+                </table>
+            </div>
+            <div id="noComplaintsMessage" style="text-align: center; padding: 20px; display: none;">No complaints found.</div>
+            <div id="errorMessage" style="text-align: center; padding: 20px; color: red; display: none;"></div>
+        </section>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/adminDashboard.js"></script>
+</body>
+</html>

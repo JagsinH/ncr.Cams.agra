@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Complaint Registration & My Complaints</title>
+    <link rel="stylesheet" href="css/style.css">
+    </head>
+    <style>
+        #logoutBtn:hover{
+            background-color: #e4463b;
+            color: white;
+            
+        }
+    </style>
+<body>
+    <header>
+        <h1 id="welcomeMessage">Welcome, User!</h1>
+        <nav>
+            <button id="logoutBtn" >Logout</button>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        <div class="container">
+            <h2 style="color: black; margin-left: 430px;">Register a New Complaint</h2>
+            <form id="complaintForm" novalidate>
+                <div class="form-group">
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" id="fullName" placeholder="Your name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="+91 XXXXXXXXXX" pattern="[0-9]{10}" title="Please enter a 10-digit phone number"/>
+                </div>
+                <div class="form-group">
+                    <label for="product">Product</label>
+                    <select id="product" required>
+                        <option value="">-- Select Product --</option>
+                        <option value="Computers">Computers</option>
+                        <option value="Mouse">Mouse</option>
+                        <option value="Printers">Printers</option>
+                        <option value="Keyboards">Keyboards</option>
+                        <option value="UPS">UPS</option>
+                        <option value="Others">Others</option>
+                        
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <select id="department" required>
+                        <option value="">-- Select Department --</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Operating">Operating</option>
+                        <option value="Mechanical">Mechanical</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Civil Engineering">Civil Engineering</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Security (RPF)">Security (RPF)</option>
+                        <option value="Personnel">Personnel</option>
+                        <option value="Accounts">Accounts</option>
+                        <option value="IT">IT</option>
+                        <option value="S&T">S&T (Signal & Telecom)</option>
+                        <option value="Stores">Stores</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" required placeholder="Brief summary of your complaint"/>
+                </div>
+                <div class="form-group">
+                    <label for="description">Complaint Description:</label>
+                    <textarea id="description" rows="5" required placeholder="Describe your issue in detail"></textarea>
+                </div>
+                <button type="submit">Submit Complaint</button>
+            </form>
+            <div id="complaintMessage" class="message"></div>
+        </div>
+        <br><br>
+        <div class="container" id="myComplaintsSection">
+            <h2 style="color: black; margin-left: 430px;">Your Submitted Complaints</h2>
+            <table id="myComplaintsList">
+                <thead>
+                    <tr>
+                        <th>Complaint ID</th>
+                        <th>Subject</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Admin Comment</th>
+                        <th>Product/Service</th>
+                        <th>Department</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <p id="noComplaintsMessage" class="no-complaints"></p>
+        </div>
+    </main>
+
+    <script src="js/common.js"></script>
+    <script src="js/complaints.js"></script>
+</body>
+</html>

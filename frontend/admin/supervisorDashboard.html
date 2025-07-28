@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .supervisor-header {
+            background-color: #ffc107; 
+            color: #333;
+        }
+        .supervisor-header h1 {
+            color: #333;
+        }
+        .complaint-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .complaint-table th,
+        .complaint-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            word-wrap: break-word;
+            vertical-align: top; 
+        }
+        .complaint-table th {
+            background-color: #f2f2f2;
+        }
+        .action-buttons button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px; 
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+        }
+        .action-buttons button.assign-btn { background-color: #007bff; color: white; }
+        .action-buttons button.assign-btn:hover { background-color: #0056b3; }
+        .action-buttons button.review-btn { background-color: #28a745; color: white; }
+        .action-buttons button.review-btn:hover { background-color: #218838; }
+        .action-buttons button.details-btn { background-color: #6c757d; color: white; }
+        .action-buttons button.details-btn:hover { background-color: #5a6268; }
+
+
+        
+        .modal {
+            display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 50px;
+        }
+        .modal-content {
+            background-color: #fefefe; margin: auto; padding: 30px; border-radius: 8px;
+            width: 90%; max-width: 700px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa; float: right; font-size: 32px; font-weight: bold; cursor: pointer;
+            position: absolute; right: 20px; top: 15px;
+        }
+        .close-button:hover, .close-button:focus { color: #333; text-decoration: none; }
+
+        .modal-header {
+            border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0; color: #333; font-size: 24px;
+        }
+        .modal-body p {
+            margin-bottom: 8px; line-height: 1.5;
+        }
+        .modal-body strong {
+            display: inline-block; min-width: 150px; color: #555;
+        }
+        .modal-footer {
+            border-top: 1px solid #eee; padding-top: 15px; margin-top: 20px; text-align: right;
+        }
+        .modal-footer button {
+            padding: 10px 20px; background-color: #007bff; color: white; border: none;
+            border-radius: 5px; cursor: pointer; font-size: 16px;
+        }
+        .modal-footer button:hover { background-color: #0056b3; }
+
+        .modal-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px dotted #e0e0e0;
+        }
+        .modal-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .modal-section h4 {
+            margin-top: 0;
+            color: #444;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        #assignTechnicianSelect, #updateStatusSelect, #supervisorReviewStatusSelect {
+            width: calc(100% - 22px); 
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #supervisorCommentInput {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <header class="supervisor-header">
+        <h1 id="welcomeSupervisorMessage">Supervisor Dashboard</h1>
+        <nav>
+            <button id="logoutBtn">Logout</button>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        <div class="container">
+            <h2>All Complaints Overview</h2>
+            <div id="supervisorMessage" class="message"></div>
+            <table id="supervisorComplaintsTable" class="complaint-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User Name</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Review Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <p id="noSupervisorComplaintsMessage" class="no-complaints">No complaints found.</p>
+        </div>
+    </main>
+
+    <div id="supervisorComplaintModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="modal-header">
+                <h3>Complaint Details - <span id="modalComplaintId"></span></h3>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h4>Complaint Information</h4>
+                    <p><strong>User:</strong> <span id="modalUserName"></span> (<span id="modalUserEmail"></span>)</p>
+                    <p><strong>Subject:</strong> <span id="modalSubject"></span></p>
+                    <p><strong>Description:</strong> <span id="modalDescription"></span></p>
+                    <p><strong>Phone:</strong> <span id="modalPhone"></span></p>
+                    <p><strong>Product/Service:</strong> <span id="modalProduct"></span></p>
+                    <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
+                    <p><strong>Submitted On:</strong> <span id="modalCreatedAt"></span></p>
+                    <p><strong>Last Updated:</strong> <span id="modalUpdatedAt"></span></p>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Assignment & Technician Response</h4>
+                    <p><strong>Current Status:</strong> <span id="modalCurrentStatus"></span></p>
+                    <p><strong>Assigned To:</strong> <span id="modalAssignedTo"></span></p>
+                    <p><strong>Technician Response:</strong> <span id="modalTechnicianResponse"></span></p>
+                    <p><strong>Supervisor Review Status:</strong> <span id="modalSupervisorReviewStatus"></span></p>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Assign / Re-assign Complaint</h4>
+                    <label for="assignTechnicianSelect">Assign to Technician:</label>
+                    <select id="assignTechnicianSelect">
+                        <option value="">-- Select Technician --</option>
+                        </select>
+                    <button id="assignComplaintBtn">Assign</button>
+                    <div id="assignMessage" class="message"></div>
+                </div>
+
+                <div class="modal-section">
+                    <h4>Review & Finalize Complaint</h4>
+                    <label for="supervisorReviewStatusSelect">Supervisor Review Status:</label>
+                    <select id="supervisorReviewStatusSelect">
+                        <option value="Pending Review">Pending Review</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <label for="updateStatusSelect">Final Complaint Status:</label>
+                    <select id="updateStatusSelect">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <label for="supervisorCommentInput">Supervisor Comment (Optional):</label>
+                    <textarea id="supervisorCommentInput" rows="3"></textarea>
+                    <button id="finalizeComplaintBtn">Finalize Status</button>
+                    <div id="finalizeMessage" class="message"></div>
+                </div>
+            </div>
+            <div id="modalOverallMessage" class="message"></div>
+        </div>
+    </div>
+
+    <button id="generateReportBtn">Generate Complaints Report (Excel)</button>
+
+
+    <script src="../js/common.js"></script>
+    <script src="../js/adminSupervisor.js"></script>
+</body>
+</html>

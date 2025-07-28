@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Warranty Lookup Directory</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .category {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin: 20px auto;
+      max-width: 600px;
+      overflow: hidden;
+    }
+
+    .category-header {
+      background: #3498db;
+      color: white;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category-header:hover {
+      background: #2980b9;
+    }
+
+    .category-list {
+      display: none;
+      padding: 10px 20px 20px 20px;
+    }
+
+    .category-list ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .category-list li {
+      margin: 10px 0;
+      padding: 8px;
+      background: #ecf0f1;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    .category-list li:hover {
+      background: #d0e4f2;
+    }
+
+    .category-list a {
+      text-decoration: none;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .toggle-icon {
+      font-size: 16px;
+      transition: transform 0.3s;
+    }
+
+    .expanded .toggle-icon {
+      transform: rotate(90deg);
+    }
+  </style>
+</head>
+<body>
+
+	<header>
+        <h1>Welcome to the Warranty Check Room!</h1>
+    </header>
+
+  <div id="content"></div>
+
+  <script>
+    const warrantyData = {
+      "Computers": [
+        { "name": "Dell", "link": "https://www.dell.com/support/contractservices/en-in/" },
+        { "name": "HP", "link": "https://support.hp.com/in-en/check-warranty" },
+        { "name": "ASUS", "link": "https://www.asus.com/in/support/warranty-status-inquiry/" },
+        { "name": "Lenovo", "link": "https://pcsupport.lenovo.com/in/en/warranty-lookup#/" },
+        { "name": "MSI", "link": "https://www.msi.com/support/technical_details/product-warranty-related" },
+        { "name": "Samsung", "link": "https://www.samsung.com/in/support/warranty/" },
+        { "name": "Acer", "link": "https://www.acer.com/ac/en/US/content/warranty" },
+        { "name": "LG", "link": "https://www.lg.com/in/support/warranty" },
+        { "name": "ViewSonic", "link": "https://www.viewsonic.com/us/support/warranty" },
+        { "name": "BenQ", "link": "https://www.benq.com/en-in/support/warranty.html" },
+		{ "name": "INP", "link": "https://www.inp.co.in/warranty" },
+		{ "name": "Voltriq", "link": "https://voltriq.com/warranty-check/" } 
+		
+      ],
+      "Mouse": [
+        { "name": "Logitech", "link": "https://www.logitech.com/en-in/tos/limited-hardware-warranty.html" },
+        { "name": "Razer", "link": "https://www.razer.com/warranty" },
+        { "name": "Corsair", "link": "https://www.corsair.com/us/en/warranty/" },
+        { "name": "SteelSeries", "link": "https://steelseries.com/warranty" },
+        { "name": "Glorious", "link": "https://www.gloriousgaming.com/pages/warranty" },
+        { "name": "HP", "link": "https://support.hp.com/in-en/check-warranty" },
+        { "name": "Dell", "link": "https://www.dell.com/support/home/en-in/warranty" },
+		{ "name": "prodot", "link": "https://www.prodotgroup.com/faq" }
+		
+		],
+      "Printers": [
+        { "name": "HP", "link": "https://support.hp.com/in-en/check-warranty" },
+        { "name": "Epson", "link": "https://epson.com/w/warranty" },
+        { "name": "Canon", "link": "https://in.canon/en/support/warranty" },
+        { "name": "Brother", "link": "https://www.brother.in/en/contents/warranty" },
+        { "name": "Dell", "link": "https://www.dell.com/support/home/en-in/warranty" },
+        { "name": "Samsung (Printers)", "link": "https://www.samsung.com/in/support/warranty/" },
+		{ "name": "CWC(Ecompusell)", "link": "https://ecompusell.com/warranty" }
+	
+	
+      ],
+      "Keyboards": [
+        { "name": "Logitech", "link": "https://www.logitech.com/en-in/tos/limited-hardware-warranty.html" },
+        { "name": "Razer", "link": "https://www.razer.com/warranty" },
+        { "name": "Corsair", "link": "https://www.corsair.com/us/en/warranty/" },
+        { "name": "SteelSeries", "link": "https://steelseries.com/warranty" },
+        { "name": "Glorious", "link": "https://www.gloriousgaming.com/pages/warranty" },
+        { "name": "HyperX", "link": "https://row.hyperx.com/pages/warranty" },
+        { "name": "HP", "link": "https://support.hp.com/in-en/check-warranty" },
+        { "name": "Dell", "link": "https://www.dell.com/support/home/en-in/warranty" }
+		
+      ],	  
+	  "UPS": [
+	    { "name": "Microtek", "link": "https://www.microtek.in/refund-policy" },
+		{ "name": "cyberpower", "link": "https://www.cyberpowersystems.com/product-warranty/" },
+		{ "name": "ELNOVA", "link": "https://elnova.com/product-registration/" },
+		{ "name": "APC", "link": "https://www.apc.com/us/en/support/product-support/ups-factory-warranty-information.jsp" },
+		{ "name": "Uniline", "link": "https://www.google.com/search?q=https://unilineindia.com/product-registration/" },
+		{ "name": "BPE", "link": "https://www.bpee.com/assets/images/pdf/Warranty-information.pdf" }
+	  ]
+    };
+
+    const contentDiv = document.getElementById('content');
+
+    for (const category in warrantyData) {
+      const section = document.createElement('div');
+      section.className = 'category';
+
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      header.innerHTML = `${category} <span class="toggle-icon">▶</span>`;
+      header.onclick = () => {
+        section.classList.toggle('expanded');
+        const list = section.querySelector('.category-list');
+        list.style.display = list.style.display === 'block' ? 'none' : 'block';
+      };
+
+      const listContainer = document.createElement('div');
+      listContainer.className = 'category-list';
+
+      const list = document.createElement('ul');
+      warrantyData[category].forEach(item => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = item.link;
+        a.textContent = item.name;
+        a.target = "_blank";
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+
+      listContainer.appendChild(list);
+      section.appendChild(header);
+      section.appendChild(listContainer);
+      contentDiv.appendChild(section);
+    }
+  </script>
+
+</body>
+</html>
