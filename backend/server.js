@@ -19,7 +19,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(cors()); 
+app.use(cors({origin:'https://ncr-cams-agra-y7kk.onrender.com'})); 
 app.use(bodyParser.json()); 
 
 connectDB();
@@ -52,6 +52,8 @@ app.use((err, req, res, next) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend', 'login.html')); 
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
