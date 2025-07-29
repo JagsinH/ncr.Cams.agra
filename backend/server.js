@@ -55,7 +55,7 @@ app.use(cors({
     },
     // If you are sending cookies or authorization headers (like JWT in Authorization header)
     // you might need to enable credentials.
-    // credentials: true,
+    credentials: true,
 }));
 
 
@@ -77,13 +77,13 @@ app.use('/api', (req, res, next) => {
 // If you are deploying frontend as a separate Render Static Site, REMOVE or COMMENT OUT this block.
 // If your HTML/CSS/JS frontend is served by this backend, keep this.
 // Assuming your 'frontend' folder is one level up from 'backend/server.js'
-// app.use(express.static(path.join(__dirname, '../frontend'))); 
-// app.get('/', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../frontend', 'login.html')); 
-// });
-// app.get('*', (req, res) => { // Catch-all for frontend routes, send index.html
-//     res.sendFile(path.join(__dirname, '../frontend', 'index.html')); 
-// });
+app.use(express.static(path.join(__dirname, '../frontend'))); 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend', 'login.html')); 
+});
+app.get('*', (req, res) => { // Catch-all for frontend routes, send index.html
+    res.sendFile(path.join(__dirname, '../frontend', 'index.html')); 
+});
 
 
 // --- Error Handling ---
