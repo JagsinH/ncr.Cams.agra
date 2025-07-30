@@ -81,9 +81,9 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend', 'login.html')); 
 });
-app.get('*', (req, res) => { // Catch-all for frontend routes, send index.html
-    res.sendFile(path.join(__dirname, '../frontend', 'index.html')); 
-});
+// app.get('*', (req, res) => { // Catch-all for frontend routes, send index.html
+//     res.sendFile(path.join(__dirname, '../frontend', 'index.html')); 
+// });
 
 
 // --- Error Handling ---
