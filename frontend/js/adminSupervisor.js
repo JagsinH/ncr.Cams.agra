@@ -4,6 +4,7 @@
 // IMPORTANT: Based on your previous screenshots, your backend appears to be running on localhost:3000.
 // Verify this port matches your actual backend server's port.
 // <--- ADD THIS LINE!
+const API_BASE_URL = 'https://ncr-cams-agra-bwrq.onrender.com'; // Update this if your backend URL changes
 
 // Define the showMessage helper function (already present and correct)
 function showMessage(elementId, message, type) {

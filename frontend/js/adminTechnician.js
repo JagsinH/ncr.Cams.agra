@@ -1,4 +1,5 @@
 // frontend/js/technician_dashboard.js
+const API_BASE_URL = 'https://ncr-cams-agra-bwrq.onrender.com'; // Update this if your backend URL changes
 
 document.addEventListener('DOMContentLoaded', async () => {
     const welcomeTechnicianMessage = document.getElementById('welcomeTechnicianMessage');
