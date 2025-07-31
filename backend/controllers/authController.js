@@ -1,4 +1,4 @@
-
+// backend/controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
@@ -6,38 +6,42 @@ const { pool, query } = require('../config/db');
 const crypto = require('crypto');
 
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY); 
+const resend = new Resend(process.env.RESEND_API_KEY); // Correct Resend initialization
 
+// Generate JWT token
 const generateToken = (id, role, name) => {
     return jwt.sign({ id, role, name }, process.env.JWT_SECRET, {
-        expiresIn: '1h', 
+        expiresIn: '1h', // Token expires in 1 hour
     });
 };
 
+// @desc    Register new user
+// @route   POST /api/users/register
+// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
 
-    
+    // Validate input
     if (!name || !email || !password) {
         res.status(400);
         throw new Error('Please enter all fields: name, email, and password.');
     }
 
-    
+    // Check if user exists
     const userExists = await query('SELECT id FROM users WHERE email = $1', [email]);
     if (userExists.rows.length > 0) {
         res.status(400);
         throw new Error('User with this email already exists.');
     }
 
-    
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-
+    // Create user in DB
     const result = await query(
         'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-        [name, email, hashedPassword, 'user'] 
+        [name, email, hashedPassword, 'user'] // Default role 'user'
     );
     const newUser = result.rows[0];
 
@@ -58,15 +62,19 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Authenticate a user
+// @route   POST /api/users/login
+// @access  Public
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    
+    // Validate input
     if (!email || !password) {
         res.status(400);
         throw new Error('Please enter both email and password.');
     }
-    
+
+    // Check for user email
     const userResult = await query('SELECT id, name, email, password_hash, role FROM users WHERE email = $1', [email]);
     const user = userResult.rows[0];
 
@@ -74,7 +82,7 @@ const loginUser = asyncHandler(async (req, res) => {
         res.json({
             message: 'Logged in successfully!',
             token: generateToken(user.id, user.role, user.name),
-            user: { 
+            user: { // Send back user object
                 id: user.id,
                 name: user.name,
                 email: user.email,
@@ -87,11 +95,13 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 });
 
-
+// @desc    Request password reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
 const requestPasswordReset = async (req, res) => {
     const { email } = req.body;
 
-    
+    // Added logs for debugging as discussed previously
     console.log(`[requestPasswordReset] Received request for email: ${email}`); 
 
     if (!email) {
@@ -104,6 +114,8 @@ const requestPasswordReset = async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         const user = userResult.rows[0];
 
+        // Always send a 200 OK response for security reasons, even if user not found.
+        // This prevents email enumeration attacks.
         if (!user) {
             console.log(`[requestPasswordReset] User not found for email: ${email}. Sending generic success message.`); 
             return res.status(200).json({ message: 'If a matching account is found, a password reset link will be sent to your email.' });
@@ -111,24 +123,29 @@ const requestPasswordReset = async (req, res) => {
 
         console.log(`[requestPasswordReset] User found: ${user.email}. Generating token...`); 
 
+        // Generate a reset token (using Node's crypto for stronger tokens)
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetExpires = new Date(Date.now() + 3600000); 
+        // --- FIX Applied here already in previous step ---
+        const resetExpires = new Date(Date.now() + 3600000); // 1 hour from now, converted to Date object
         console.log(`[requestPasswordReset] Reset token expires at (Date object): ${resetExpires}`);
-        
+        // --- End FIX ---
+
+        // Save token and expiry to user in DB
         console.log('[requestPasswordReset] Updating user with reset token in DB...'); 
         await pool.query(
             'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
-            [resetToken, resetExpires, user.id]
+            [resetToken, resetExpires, user.id] // Pass the Date object
         );
         console.log('[requestPasswordReset] User updated with reset token.'); 
 
-    
+        // Construct reset URL for frontend
         const resetUrl = `${process.env.WEB_APP_URL}/reset-password.html?token=${resetToken}`;
         console.log(`[requestPasswordReset] Reset URL generated: ${resetUrl}`); 
 
+        // --- CORRECTED EMAIL SENDING WITH RESEND ---
         console.log(`[requestPasswordReset] Attempting to send email to: ${user.email} from: ${process.env.EMAIL_SENDER_ADDRESS}`); 
         const { data, error } = await resend.emails.send({
-            from: process.env.EMAIL_SENDER_ADDRESS, 
+            from: process.env.EMAIL_SENDER_ADDRESS, // Use the verified sender address for Resend
             to: user.email,
             subject: 'Password Reset Request',
             html: `
@@ -157,57 +174,62 @@ const requestPasswordReset = async (req, res) => {
     }
 };
 
+// @desc    Reset user password
+// @route   POST /api/auth/reset-password
+// @access  Public
+
 const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
-    console.log(`[resetPassword] Received request to reset password.`); 
-    console.log(`[resetPassword] Token received: ${token ? 'Present' : 'Missing'}`); 
+
+    console.log(`[resetPassword] Received request to reset password.`); // LOG 1
+    console.log(`[resetPassword] Token received: ${token ? 'Present' : 'Missing'}`); // LOG 2
     console.log(`[resetPassword] New password received: ${newPassword ? 'Present' : 'Missing'} (length: ${newPassword ? newPassword.length : 'N/A'})`); // LOG 3
 
 
     if (!token || !newPassword) {
-        console.log('[resetPassword] Missing token or new password.'); 
+        console.log('[resetPassword] Missing token or new password.'); // LOG 4
         return res.status(400).json({ message: 'Token and new password are required.' });
     }
 
     if (newPassword.length < 6) {
-        console.log('[resetPassword] New password too short.'); 
+        console.log('[resetPassword] New password too short.'); // LOG 5
         return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
     }
 
     try {
-        
-        console.log('[resetPassword] Querying database for user with token...'); 
+        // Find user by reset token and check expiry
+        console.log('[resetPassword] Querying database for user with token...'); // LOG 6
         const userResult = await pool.query(
             'SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > $2',
-            [token, new Date()] 
+            [token, new Date()] // Pass current time as a Date object for comparison
         );
         const user = userResult.rows[0];
 
         if (!user) {
-            console.log('[resetPassword] User not found or token expired/invalid.'); 
+            console.log('[resetPassword] User not found or token expired/invalid.'); // LOG 7
             return res.status(400).json({ message: 'Password reset token is invalid or has expired.' });
         }
 
-        console.log(`[resetPassword] User found: ${user.email}. Hashing new password...`); 
+        console.log(`[resetPassword] User found: ${user.email}. Hashing new password...`); // LOG 8
 
-        
+        // Hash new password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
-        console.log('[resetPassword] New password hashed successfully.'); 
+        console.log('[resetPassword] New password hashed successfully.'); // LOG 9
 
-        
-        console.log('[resetPassword] Updating user password in DB...'); 
+        // Update password and clear reset token fields
+        console.log('[resetPassword] Updating user password in DB...'); // LOG 10
         await pool.query(
             'UPDATE users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2',
             [hashedPassword, user.id]
         );
-        console.log('[resetPassword] Password updated and token cleared successfully.'); 
+        console.log('[resetPassword] Password updated and token cleared successfully.'); // LOG 11
 
 
         res.status(200).json({ message: 'Password has been reset successfully.' });
 
     } catch (error) {
-        console.error('Error in resetPassword:', error); 
+        console.error('Error in resetPassword:', error); // LOG 12 - Catch-all error
         res.status(500).json({ message: 'Server error during password reset.' });
     }
 };
