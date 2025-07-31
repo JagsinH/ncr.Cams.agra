@@ -1,9 +1,11 @@
-
+// backend/controllers/supervisorController.js
 const asyncHandler = require('express-async-handler');
 const { query } = require('../config/db');
 const ExcelJS = require('exceljs');
 
-
+// @desc    Get all complaints for Supervisor dashboard
+// @route   GET /api/supervisor/complaints
+// @access  Private (Supervisor, Admin)
 const getSupervisorComplaints = asyncHandler(async (req, res) => {
     try {
         const result = await query(`
@@ -47,15 +49,19 @@ const getSupervisorComplaints = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Assign a complaint to a technician
+// @route   PUT /api/supervisor/complaints/:id/assign
+// @access  Private (Supervisor, Admin)
 const assignComplaint = asyncHandler(async (req, res) => {
     const complaintId = req.params.id;
-    const { technicianId } = req.body; 
+    const { technicianId } = req.body; // ID of the technician to assign to
 
     if (!technicianId) {
         res.status(400);
         throw new Error('Technician ID is required for assignment.');
     }
 
+    // Optional: Verify technicianId actually belongs to a 'technician' role
     const technicianCheck = await query('SELECT role FROM users WHERE id = $1', [technicianId]);
     if (technicianCheck.rows.length === 0 || technicianCheck.rows[0].role !== 'technician') {
         res.status(400);
@@ -87,10 +93,13 @@ const assignComplaint = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Review technician response and finalize complaint status
+// @route   PUT /api/supervisor/complaints/:id/review
+// @access  Private (Supervisor, Admin)
 const reviewAndFinalizeComplaint = asyncHandler(async (req, res) => {
     const complaintId = req.params.id;
-    const { supervisorReviewStatus, finalStatus, supervisorComment } = req.body; 
-    const supervisorId = req.user.id; 
+    const { supervisorReviewStatus, finalStatus, supervisorComment } = req.body; // new review status, final status, optional supervisor comment
+    const supervisorId = req.user.id; // ID of the supervisor performing the action
 
     if (!supervisorReviewStatus || !finalStatus) {
         res.status(400);
@@ -135,7 +144,9 @@ const reviewAndFinalizeComplaint = asyncHandler(async (req, res) => {
     }
 });
 
-
+// @desc    Get a list of users with 'technician' role
+// @route   GET /api/supervisor/technicians
+// @access  Private (Supervisor, Admin)
 const getTechnicians = asyncHandler(async (req, res) => {
     try {
         const result = await query('SELECT id, name, email FROM users WHERE role = $1 ORDER BY name', ['technician']);
@@ -147,8 +158,12 @@ const getTechnicians = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Generate a report of complaints as an Excel file
+// @route   GET /api/supervisor/complaints/report/excel
+// @access  Private (Admin, Supervisor)
 const getComplaintReport = asyncHandler(async (req, res) => {
     try {
+        // Fetch all complaints (or filtered complaints based on query params if you add them)
         const result = await query(`
             SELECT
                 c.id AS complaint_id,
@@ -179,10 +194,11 @@ const getComplaintReport = asyncHandler(async (req, res) => {
 
         const complaints = result.rows;
 
-        
+        // Create a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Complaints Report');
 
+        // Define columns
         worksheet.columns = [
             { header: 'Complaint ID', key: 'complaint_id', width: 15 },
             { header: 'Subject', key: 'subject', width: 30 },
@@ -202,8 +218,10 @@ const getComplaintReport = asyncHandler(async (req, res) => {
             { header: 'Assigned Technician', key: 'assigned_technician_name', width: 25 },
         ];
 
+        // Add rows
         worksheet.addRows(complaints);
 
+        // Set response headers for file download
         res.setHeader(
             'Content-Type',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -213,6 +231,7 @@ const getComplaintReport = asyncHandler(async (req, res) => {
             'attachment; filename=' + 'complaints_report_' + Date.now() + '.xlsx'
         );
 
+        // Write to response
         await workbook.xlsx.write(res);
         res.end();
 

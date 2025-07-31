@@ -1,7 +1,10 @@
-
+// backend/controllers/complaintController.js
 const asyncHandler = require('express-async-handler');
 const { query } = require('../config/db');
 
+// @desc    Create a new complaint
+// @route   POST /api/complaints
+// @access  Private (User)
 const createComplaint = asyncHandler(async (req, res) => {
     const { subject, description, phone, product, department } = req.body;
     const userId = req.user.id; // User ID from `protect` middleware
@@ -32,6 +35,15 @@ const createComplaint = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Get complaints by logged-in user
+// @route   GET /api/complaints/my-complaints
+// @access  Private (User)
+
+// ... (createComplaint remains the same) ...
+
+// @desc    Get complaints by logged-in user
+// @route   GET /api/complaints/my-complaints
+// @access  Private (User)
 const getUserComplaints = asyncHandler(async (req, res) => {
     const userId = req.user.id;
 
@@ -70,7 +82,9 @@ const getUserComplaints = asyncHandler(async (req, res) => {
     }
 });
 
-
+// @desc    Get single complaint by ID (for tracking)
+// @route   GET /api/complaints/track/:id
+// @access  Public (Can be made private if user should only track their own)
 
 
 const getComplaintById = asyncHandler(async (req, res) => {
