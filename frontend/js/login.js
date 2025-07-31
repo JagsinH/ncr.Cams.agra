@@ -1,7 +1,6 @@
 // frontend/js/login.js
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
-    const API_BASE_URL = 'https://ncr-cams-agra-bwrq.onrender.com';
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
