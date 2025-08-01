@@ -26,6 +26,7 @@ const app = express();
 // Body parser for JSON
 app.use(bodyParser.json());
 app.use(express.json()); // express.json() is preferred over bodyParser.json() for newer Express versions
+app.use(express.urlencoded({ extended: false }));
 
 
 // CORS Configuration: VERY IMPORTANT for deployed frontend
