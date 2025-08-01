@@ -27,40 +27,68 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('Please enter all fields: name, email, and password.');
     }
 
-    // Check if user exists
-    const userExists = await query('SELECT id FROM users WHERE email = $1', [email]);
-    if (userExists.rows.length > 0) {
-        res.status(400);
-        throw new Error('User with this email already exists.');
-    }
+    // 1. Check if the user already exists
+    const userExistsQuery = 'SELECT id, role, password_hash FROM users WHERE email = $1';
+    const userExistsResult = await query(userExistsQuery, [email]);
+    const user = userExistsResult.rows[0];
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    if (user) {
+        // Case 1: User with this email already exists and has a password set.
+        if (user.password_hash) {
+            res.status(400);
+            throw new Error('User with this email already exists.');
+        }
 
-    // Create user in DB
-    const result = await query(
-        'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-        [name, email, hashedPassword, 'user'] // Default role 'user'
-    );
-    const newUser = result.rows[0];
+        // Case 2: User exists but has an empty password_hash (a pre-registered user)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-    if (newUser) {
-        res.status(201).json({
-            message: 'User registered successfully!',
-            token: generateToken(newUser.id, newUser.role, newUser.name),
-            user: {
-                id: newUser.id,
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser.role,
-            },
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
+        const updateQuery = 'UPDATE users SET name = $1, password_hash = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING id, name, email, role';
+        const updatedUserResult = await query(updateQuery, [name, hashedPassword, user.id]);
+        const updatedUser = updatedUserResult.rows[0];
+
+        if (updatedUser) {
+            res.status(200).json({
+                message: 'Profile updated and password set successfully!',
+                token: generateToken(updatedUser.id, updatedUser.role, updatedUser.name),
+                user: {
+                    id: updatedUser.id,
+                    name: updatedUser.name,
+                    email: updatedUser.email,
+                    role: updatedUser.role,
+                },
+            });
+        } else {
+            res.status(500); 
+            throw new Error('Failed to update user profile.');
+        }
+
+    } else { // Case 3: User does not exist, register as a new 'user'
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const insertQuery = 'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role';
+        const result = await query(insertQuery, [name, email, hashedPassword, 'user']);
+        const newUser = result.rows[0];
+
+        if (newUser) {
+            res.status(201).json({
+                message: 'User registered successfully!',
+                token: generateToken(newUser.id, newUser.role, newUser.name),
+                user: {
+                    id: newUser.id,
+                    name: newUser.name,
+                    email: newUser.email,
+                    role: newUser.role,
+                },
+            });
+        } else {
+            res.status(400);
+            throw new Error('Invalid user data');
+        }
     }
 });
+
 
 // @desc    Authenticate a user
 // @route   POST /api/users/login
