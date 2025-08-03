@@ -1,12 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const { query } = require('../config/db');
-
-// @desc    Get complaints assigned to the logged-in technician
-// @route   GET /api/technician/complaints
-// @access  Private (Technician)
-const asyncHandler = require('express-async-handler');
-const { query } = require('../config/db');
-
 // @desc    Get complaints assigned to the logged-in technician
 // @route   GET /api/technician/complaints
 // @access  Private (Technician)
