@@ -4,14 +4,27 @@ const { query } = require('../config/db');
 // @desc    Get complaints assigned to the logged-in technician
 // @route   GET /api/technician/complaints
 // @access  Private (Technician)
+const asyncHandler = require('express-async-handler');
+const { query } = require('../config/db');
+
+// @desc    Get complaints assigned to the logged-in technician
+// @route   GET /api/technician/complaints
+// @access  Private (Technician)
 const getTechnicianComplaints = asyncHandler(async (req, res) => {
-    const technicianId = req.user.id; // Get the ID of the logged-in technician from req.user
+    // Add logging to verify the user ID
+    const technicianId = req.user.id;
+    console.log('[getTechnicianComplaints] Attempting to fetch complaints for technician ID:', technicianId);
 
-     console.log('Fetching complaints for technician ID:', technicianId);
-
+    // Basic authorization check
+    if (!technicianId) {
+        console.error('[getTechnicianComplaints] Authorization Error: Technician ID is missing from JWT token.');
+        res.status(401);
+        throw new Error('Not authorized, technician ID missing.');
+    }
+    
     try {
-        const result = await query(
-            `SELECT
+        const sqlQuery = `
+            SELECT
                 c.id,
                 c.subject,
                 c.description,
@@ -35,15 +48,19 @@ const getTechnicianComplaints = asyncHandler(async (req, res) => {
                 c.assigned_to = $1
             ORDER BY
                 c.created_at DESC;
-            `,
-            [technicianId]
-        );
+        `;
+        
+        const result = await query(sqlQuery, [technicianId]);
 
-        res.json(result.rows);
+        console.log('[getTechnicianComplaints] Successfully fetched', result.rows.length, 'complaints.');
+        res.status(200).json(result.rows);
     } catch (error) {
-        console.error('Error fetching technician complaints:', error);
-        res.status(500);
-        throw new Error('Server error: Could not fetch assigned complaints.');
+        // --- THE KEY FIX IS HERE ---
+        // Log the specific database error to the console
+        console.error('Error fetching technician complaints:', error.message);
+        console.error('Full stack trace:', error.stack);
+        // Do NOT re-throw. Send a clear, actionable error message to the frontend.
+        res.status(500).json({ message: 'Server error: Could not fetch assigned complaints. Check server logs for details.' });
     }
 });
 
