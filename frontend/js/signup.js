@@ -1,7 +1,7 @@
 // frontend/js/signup.js
 document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signupForm');
-    const API_BASE_URL = 'https://ncr-cams-agra-bwrq.onrender.com';
+    const API_BASE_URL = 'https://ncr-cams-agra.onrender.com';
     
 
     if (signupForm) {

@@ -1,6 +1,6 @@
 // frontend/js/common.js
 // Define the base URL for your API. Match your backend's PORT.
-const API_BASE_URL = 'https://ncr-cams-agra-bwrq.onrender.com';
+const API_BASE_URL = 'https://ncr-cams-agra.onrender.com';
 
 // Function to display messages consistently
 function showMessage(elementId, text, type) {
