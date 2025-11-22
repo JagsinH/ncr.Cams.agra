@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // --- CORRECTED API ENDPOINT HERE ---
-                const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
